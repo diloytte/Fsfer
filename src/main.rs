@@ -1,16 +1,16 @@
-mod get_chats;
 mod find_chat;
+mod get_chats;
 mod get_input;
 
 use dotenv::dotenv;
 use find_chat::find_chat;
 use get_chats::get_all_chats;
 use get_input::get_input;
+use grammers_client::Update;
 use grammers_client::{Client, Config, SignInError};
 use grammers_session::Session;
 use std::env;
 use tokio::fs;
-use grammers_client::Update;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -56,10 +56,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Connected to Telegram!");
 
-
     let chats = get_all_chats(&client).await?;
 
-    let from_chat = find_chat(&chats,"Redacted Systems Bot").await?.unwrap();
+    let from_chat = find_chat(&chats, "Redacted Systems Bot").await?.unwrap();
 
     let to_chat = find_chat(&chats, "Redacted Forwards").await?.unwrap();
 
@@ -72,12 +71,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let message_id = message.id();
                 let chat_id = message_chat.id();
                 if chat_id == from_chat_id {
-                    client.forward_messages(&to_chat, &[message_id],& from_chat).await?;
+                    client
+                        .forward_messages(&to_chat, &[message_id], &from_chat)
+                        .await?;
                 }
             }
             Err(e) => eprintln!("Error in listen_for_updates: {}", e),
             _ => {}
         }
     }
-
 }
