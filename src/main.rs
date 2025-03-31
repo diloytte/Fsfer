@@ -16,9 +16,9 @@ use tokio::fs;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
 
-    let api_id: i32 = get_input("Enter API ID:").await?.parse()?;
-    let api_hash = get_input("Enter API HASH:").await?;
-    let phone_number = get_input("Enter PHONE NUMBER:").await?;
+    let api_id: i32 = env::var("API_ID")?.parse()?;
+    let api_hash = env::var("API_HASH")?;
+    let phone_number = env::var("PHONE_NUMBER")?;
 
     let session_file = "session.session";
     let session = if let Ok(data) = fs::read(session_file).await {
@@ -64,6 +64,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let from_chat_id = from_chat.id();
 
+    let general = find_chat(&chats, "General").await?.unwrap();
+
+    let general_id = general.id();
+
+    let me = client.get_me().await?;
+
     loop {
         match client.next_update().await {
             Ok(Update::NewMessage(message)) if !message.outgoing() => {
@@ -74,6 +80,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     client
                         .forward_messages(&to_chat, &[message_id], &from_chat)
                         .await?;
+                }
+
+                if chat_id == general_id {
+                    client
+                        .forward_messages(&me,&[message_id],&from_chat).await?;
                 }
             }
             Err(e) => eprintln!("Error in listen_for_updates: {}", e),

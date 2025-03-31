@@ -5,7 +5,7 @@ pub async fn find_chat(
     identifier: &str,
 ) -> Result<Option<Chat>, Box<dyn std::error::Error>> {
     for chat in chats {
-        if chat.id().to_string() == identifier || chat.name() == identifier {
+        if chat.id().to_string() == identifier || chat.name().contains(identifier) {
             return Ok(Some(chat.clone()));
         }
     }
