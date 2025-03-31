@@ -64,12 +64,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let from_chat_id = from_chat.id();
 
-    let general = find_chat(&chats, "General").await?.unwrap();
-
-    let general_id = general.id();
-
-    let me = client.get_me().await?;
-
     loop {
         match client.next_update().await {
             Ok(Update::NewMessage(message)) if !message.outgoing() => {
@@ -80,11 +74,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     client
                         .forward_messages(&to_chat, &[message_id], &from_chat)
                         .await?;
-                }
-
-                if chat_id == general_id {
-                    client
-                        .forward_messages(&me,&[message_id],&from_chat).await?;
                 }
             }
             Err(e) => eprintln!("Error in listen_for_updates: {}", e),
